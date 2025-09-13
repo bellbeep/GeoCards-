@@ -1,22 +1,8 @@
-workflows:
-  ios-workflow:
-    name: iOS Build
-    environment:
-      xcode: latest
-      cocoapods: default
-    scripts:
-      - name: Install dependencies
-        script: |
-          gem install cocoapods --user-install
-          pod install --repo-update || true
-      - name: Build iOS app
-        script: |
-          xcode-project build-ipa \
-            --project "GeoCards.xcodeproj" \
-            --scheme "GeoCards"
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - your@email.com
+scripts:
+  - name: Build iOS app
+    script: |
+      xcode-project build-ipa \
+        --workspace "MyApp.xcworkspace" \
+        --scheme "MyApp" \
+        --configuration "Release"
+
