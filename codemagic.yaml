@@ -2,23 +2,19 @@ workflows:
   ios-workflow:
     name: iOS Automatic Signing Workflow
 
-    # Environment configuration
     environment:
       xcode: latest
       cocoapods: default
       vars:
-        # Your app's bundle identifier
+        # Replace this with your actual bundle identifier
         BUNDLE_IDENTIFIER: com.michaelverette.myapp
 
     scripts:
       - name: Install dependencies
         script: |
-          echo "Checking for Podfile..."
-          if [ -f "ios/Podfile" ]; then
+          if [ -f "Podfile" ]; then
             echo "Podfile found. Installing CocoaPods..."
-            cd ios
             pod install --repo-update
-            cd ..
           else
             echo "No Podfile found. Skipping CocoaPods installation."
           fi
@@ -26,20 +22,26 @@ workflows:
       - name: Build iOS app
         script: |
           echo "Detecting build method..."
-          if [ -f "ios/*.xcworkspace" ] || [ -f "*.xcworkspace" ]; then
-            WORKSPACE=$(find . -name "*.xcworkspace" | head -n 1)
+          WORKSPACE=$(find . -maxdepth 1 -name "*.xcworkspace" | head -n 1)
+          PROJECT=$(find . -maxdepth 1 -name "*.xcodeproj" | head -n 1)
+
+          echo "Detecting scheme..."
+          if [ -n "$WORKSPACE" ]; then
+            SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list -json | jq -r '.workspace.schemes[0]')
             echo "Workspace found: $WORKSPACE"
+            echo "Using scheme: $SCHEME"
             xcode-project build-ipa \
               --workspace "$WORKSPACE" \
-              --scheme "MyApp" \
+              --scheme "$SCHEME" \
               --configuration "Release" \
               --automatic-signing
-          elif [ -f "ios/*.xcodeproj" ] || [ -f "*.xcodeproj" ]; then
-            PROJECT=$(find . -name "*.xcodeproj" | head -n 1)
-            echo "Xcode project found: $PROJECT"
+          elif [ -n "$PROJECT" ]; then
+            SCHEME=$(xcodebuild -project "$PROJECT" -list -json | jq -r '.project.schemes[0]')
+            echo "Project found: $PROJECT"
+            echo "Using scheme: $SCHEME"
             xcode-project build-ipa \
               --project "$PROJECT" \
-              --scheme "MyApp" \
+              --scheme "$SCHEME" \
               --configuration "Release" \
               --automatic-signing
           else
@@ -47,6 +49,5 @@ workflows:
             exit 1
           fi
 
-    # Artifacts to export
     artifacts:
       - build/ios/ipa/*.ipa
