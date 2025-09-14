@@ -31,7 +31,3 @@ workflows:
     # Artifacts to export
     artifacts:
       - build/ios/ipa/*.ipa
-
-    # Optional: cache to speed up builds
-    cache:
-      cocoapods: true
