@@ -2,14 +2,10 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     environment:
-      ios:
-        xcode: latest
-        cocoapods: default
-        ios_signing:
-          automatic_signing:
-            enabled: true
-            distribution_type: app-store
-            bundle_identifier: com.michaelverette.myapp
+      xcode: latest
+      cocoapods: default
+      vars:
+        BUNDLE_IDENTIFIER: com.michaelverette.myapp
 
     scripts:
       - name: Install dependencies
@@ -21,4 +17,5 @@ workflows:
           xcode-project build-ipa \
             --workspace "MyApp.xcworkspace" \
             --scheme "MyApp" \
-            --configuration "Release"
+            --configuration "Release" \
+            --automatic-signing
