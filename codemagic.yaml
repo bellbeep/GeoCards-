@@ -1,53 +1,30 @@
 workflows:
   ios-workflow:
-    name: iOS Automatic Signing Workflow
-
+    name: iOS Build
+    max_build_duration: 60
     environment:
-      xcode: latest
-      cocoapods: default
+      xcode: 15.4
+      ios_signing:
+        distribution_type: app-store   # can be app-store, ad-hoc, development, or enterprise
+        bundle_identifier: com.example.GeoCards
       vars:
-        # Replace this with your actual bundle identifier
-        BUNDLE_IDENTIFIER: com.michaelverette.myapp
-
+        XCODE_PROJECT: "GeoCards.xcodeproj"
+        XCODE_SCHEME: "GeoCards"
     scripts:
       - name: Install dependencies
         script: |
-          if [ -f "Podfile" ]; then
-            echo "Podfile found. Installing CocoaPods..."
-            pod install --repo-update
-          else
-            echo "No Podfile found. Skipping CocoaPods installation."
-          fi
-
+          brew install cocoapods || true
+          pod install --project-directory=.
       - name: Build iOS app
         script: |
-          echo "Detecting build method..."
-          WORKSPACE=$(find . -maxdepth 1 -name "*.xcworkspace" | head -n 1)
-          PROJECT=$(find . -maxdepth 1 -name "*.xcodeproj" | head -n 1)
-
-          echo "Detecting scheme..."
-          if [ -n "$WORKSPACE" ]; then
-            SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list -json | jq -r '.workspace.schemes[0]')
-            echo "Workspace found: $WORKSPACE"
-            echo "Using scheme: $SCHEME"
-            xcode-project build-ipa \
-              --workspace "$WORKSPACE" \
-              --scheme "$SCHEME" \
-              --configuration "Release" \
-              --automatic-signing
-          elif [ -n "$PROJECT" ]; then
-            SCHEME=$(xcodebuild -project "$PROJECT" -list -json | jq -r '.project.schemes[0]')
-            echo "Project found: $PROJECT"
-            echo "Using scheme: $SCHEME"
-            xcode-project build-ipa \
-              --project "$PROJECT" \
-              --scheme "$SCHEME" \
-              --configuration "Release" \
-              --automatic-signing
-          else
-            echo "Error: No Xcode workspace or project found!"
-            exit 1
-          fi
-
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --configuration Release \
+            --automatic-signing
     artifacts:
       - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
