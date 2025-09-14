@@ -5,8 +5,8 @@ workflows:
     environment:
       xcode: 15.4
       ios_signing:
-        distribution_type: app-store   # can be app-store, ad-hoc, development, or enterprise
-        bundle_identifier: com.example.GeoCards
+        distribution_type: app_store   # ✅ corrected
+        bundle_identifier: "com.example.GeoCards"
       vars:
         XCODE_PROJECT: "GeoCards.xcodeproj"
         XCODE_SCHEME: "GeoCards"
