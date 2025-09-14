@@ -1,21 +1,37 @@
 workflows:
   ios-workflow:
-    name: iOS Workflow
+    name: iOS Automatic Signing Workflow
+
+    # Environment configuration
     environment:
       xcode: latest
       cocoapods: default
       vars:
+        # Your app's bundle identifier
         BUNDLE_IDENTIFIER: com.michaelverette.myapp
 
+    # Scripts to run in order
     scripts:
       - name: Install dependencies
         script: |
-          pod install
+          echo "Installing CocoaPods dependencies..."
+          cd ios
+          pod install --repo-update
+          cd ..
 
       - name: Build iOS app
         script: |
+          echo "Building IPA with automatic signing..."
           xcode-project build-ipa \
-            --workspace "MyApp.xcworkspace" \
+            --workspace "ios/MyApp.xcworkspace" \
             --scheme "MyApp" \
             --configuration "Release" \
             --automatic-signing
+
+    # Artifacts to export
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    # Optional: cache to speed up builds
+    cache:
+      cocoapods: true
